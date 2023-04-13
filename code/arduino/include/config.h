@@ -4,7 +4,6 @@ enum LightMode { Static, Animated };
 
 typedef struct
 {
-  char version[3];
   uint8_t brightness;
   uint8_t animationSequence;
   uint8_t staticColor;
