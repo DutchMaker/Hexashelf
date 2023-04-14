@@ -5,7 +5,8 @@ window.onload = (event) => {
 function main() {
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
-    const speed = 200;
+    const speeds = [ 200, 50, 100, 200 ];
+    const animation = 2;
     
     // Setup hexashelfs
     const hexashelfs = [
@@ -35,7 +36,7 @@ function main() {
     ];
 
     // Setup update interval and stop button
-    let updateInterval = setInterval(update, speed);
+    let updateInterval = setInterval(update, speeds[animation - 1]);
     document.getElementById("stop").onclick = () => clearInterval(updateInterval);
 
     function drawHexagon(context, pos, rgb) {
@@ -69,56 +70,160 @@ function main() {
     
     function fadeColors(color, targetColor, steps) {
         const fadedColors = [];
-        const color1 = color;
-        const color2 = targetColor;
-        const stepSize = 1 / (steps + 1);
 
         for (let j = 0; j <= steps; j++) {
-            const ratio = j * stepSize;
-            const interpolatedColor = interpolateColor(color1, color2, ratio);
-            fadedColors.push(interpolatedColor);
+            fadedColors.push(fadeColor(color, targetColor, steps, j));
         }
 
         return fadedColors;
     }
 
-    const steps = 5;    
-    const colors = [];
+    function fadeColor(color, targetColor, rangeSize, step) {
+        const fadedColors = [];
+        const color1 = color;
+        const color2 = targetColor;
+        const stepSize = 1 / (rangeSize + 1);
 
-    //colors.push(...fadeColors([255, 0, 0], [0, 255, 0], steps));
-    //colors.push(...fadeColors([0, 255, 0], [0, 0, 255], steps));
-    //colors.push(...fadeColors([0, 0, 255], [255, 255, 0], steps));
-    //colors.push(...fadeColors([255, 255, 0], [255, 0, 255], steps));
-    //colors.push(...fadeColors([255, 0, 255], [255, 255, 255], steps));
-    colors.push(...Array.from({ length: 9 }, () => [0, 0, 0]));
-    colors.push(...fadeColors([0, 0, 0], [255, 255, 255], 2));
-    colors.push(...fadeColors([255, 255, 255], [0, 0, 0], 2));
-    colors.push(...Array.from({ length: 8 }, () => [0, 0, 0]));
+        const ratio = step * stepSize;
+        return interpolateColor(color1, color2, ratio);
+    }
 
-    console.log(colors);
+    function hslToRgb(h, s, l) {
+        let r, g, b;
+    
+        if (s === 0) {
+            r = g = b = l;
+        } else {
+            const hue2rgb = (p, q, t) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1 / 6) return p + (q - p) * 6 * t;
+                if (t < 1 / 2) return q;
+                if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                return p;
+            };
+    
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+    
+            r = hue2rgb(p, q, h + 1 / 3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1 / 3);
+        }
+    
+        return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+    
+    // Setup colors for animation 1.
+    const colors_1 = [];
+    colors_1.push(...Array.from({ length: 17 }, () => [0, 0, 0]));
+    colors_1.push(...fadeColors([0, 0, 0], [255, 255, 255], 2));
+    colors_1.push(...fadeColors([255, 255, 255], [0, 0, 0], 2));
 
-    let updates = 0;
+    // Setup colors for animation 2.
+    const colors_2 = [];
+    //colors_2.push(...Array.from({ length: 17 }, () => [0, 0, 0]));
+    colors_2.push(...fadeColors([0, 255, 0], [255, 0, 0], 20));
+    colors_2.push(...fadeColors([255, 0, 0], [255, 255, 0], 40));
+    colors_2.push(...fadeColors([255, 255, 0], [0, 255, 255], 40));
+    colors_2.push(...fadeColors([0, 255, 255], [255, 0, 255], 40));
+    colors_2.push(...fadeColors([255, 0, 255], [255, 255, 255], 40));
+    colors_2.push(...fadeColors([255, 255, 255], [0, 255, 0], 20));
+
+    let counter = 0;
 
     function update() {
-        // Change colors
-        for (let i = 0; i < hexashelfs.length; i++) {
-            let color_i = i + updates;
+        handle_animation();
+        redraw();
+    }
 
-            if (color_i >= colors.length) {
-                color_i -= colors.length;
-            }
-
-            hexashelfs[i].rgb = colors[color_i];
+    function handle_animation() {
+        switch (animation) {
+            case 1:
+                handle_animation_1();
+                break;
+            case 2:
+                handle_animation_2();
+                break;
+            case 3:
+                handle_animation_3();
+                break;
+            case 4:
+                handle_animation_4();
+                break;
         }
+    }
 
-        // Redraw
+    function redraw() {
         context.clearRect(0, 0, canvas.width, canvas.height);
         for (let i = 0; i < hexashelfs.length; i++) {
             drawHexagon(context, hexashelfs[i].pos, hexashelfs[i].rgb);
         }
+    }
 
-        if (updates++ >= colors.length) {
-            updates = 0;
+    function handle_animation_1() {
+        for (let i = 0; i < hexashelfs.length; i++) {
+            let color_i = i + counter;
+
+            if (color_i >= colors_1.length) {
+                color_i -= colors_1.length;
+            }
+
+            hexashelfs[i].rgb = colors_1[color_i];
+        }
+
+        if (counter++ >= colors_1.length) {
+            counter = 0;
+        };
+    }
+
+    function handle_animation_2() {
+        for (let i = 0; i < hexashelfs.length; i++) {
+            let color_i = i + counter;
+
+            if (color_i >= colors_2.length) {
+                color_i -= colors_2.length;
+            }
+
+            hexashelfs[i].rgb = colors_2[color_i];
+        }
+
+        if (counter++ >= colors_2.length) {
+            counter = 0;
+        };
+    }
+
+    function handle_animation_3() {
+        const hue = counter / 360;
+        const rgb = hslToRgb(hue, 1, 0.5);
+
+        for (let i = 0; i < hexashelfs.length; i++) {
+            
+            hexashelfs[i].rgb = rgb;
+        }
+
+        if (counter++ >= 360) {
+            counter = 0;
+        }
+    }
+
+    function handle_animation_4() {
+        for (let i = 0; i < hexashelfs.length; i++) {
+            let color_i = i + counter;
+
+            if (color_i > 22) {
+                color_i -= 22;
+            }
+
+            let c = (i < 12) 
+                ? fadeColor([0, 0, 0], [255, 255, 255], 10, color_i)
+                : fadeColor([255, 255, 255], [0, 0, 0], 11, color_i - 10);
+
+            hexashelfs[i].rgb = c;
+        }
+
+        if (counter++ > 22) {
+            counter = 0;
         };
     }
 }
