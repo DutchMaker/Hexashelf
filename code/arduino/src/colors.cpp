@@ -1,47 +1,25 @@
 #include <math.h>
 #include "colors.h"
 
-uint8_t RANDOM_RGB_VALUES[NUM_RANDOM_RGB] = { 0, 32, 64, 96, 128, 160, 192, 224, 255 };
-
-CRGB STATIC_COLORS[NUM_STATICCOLORS] = {
-  CRGB(255, 0,    0),
-  CRGB(0,   255,  0),
-  CRGB(0,   0,    255),
-  CRGB(255, 255,  255),
-  CRGB(0,   255,  255),
-  CRGB(255, 0,    255),
-  CRGB(255, 255,    0),
-  CRGB(128,   0,    0),
-  CRGB(0,   128,    0),
-  CRGB(0,   0,    128),
-  CRGB(128, 128,  128),
-  CRGB(0,   128,  128),
-  CRGB(128,   0,  128),
-  CRGB(128, 128,    0),
-  CRGB(255,   0,  128),
-  CRGB(255, 128,    0),
-  CRGB(128,   0,  255),
-  CRGB(128, 255,    0),
-  CRGB(255, 128,  128),
-  CRGB(128, 128,  255),
-  CRGB(128, 255,  128),
-  CRGB(0,   255,  128),
-  CRGB(0,   128,  255),
-  CRGB(255, 128,    0),
-  CRGB(64,  0,    255),
-  CRGB(255, 64,   128),
-  CRGB(255, 128,   64),
-  CRGB(64,  64,    64),
-  CRGB(64,  0,     64),
-  CRGB(64,  64,     0),
-  CRGB(0,   64,    64),
-  CRGB(128, 64,     0),
-  CRGB(0,   128,   64),
-  CRGB(128, 255,   64),
-  CRGB(128, 0,     64),
-  CRGB(64,  128,    0),
-  CRGB(64,  0,    128),
-  CRGB(0,   64,   128),
+CRGB STATIC_COLORS[NUM_STATIC_COLORS] = {
+  CRGB(255, 0, 0),
+  CRGB(255, 128, 0),
+  CRGB(255, 255, 0),
+  CRGB(128, 255, 0),
+  CRGB(0, 255, 0),
+  CRGB(0, 255, 128),
+  CRGB(0, 255, 255),
+  CRGB(0, 128, 255),
+  CRGB(0, 0, 255),
+  CRGB(127, 0, 255),
+  CRGB(255, 0, 255),
+  CRGB(255, 0, 127),
+  CRGB(255, 255, 255),
+  CRGB(191, 191, 191),
+  CRGB(128, 128, 128),
+  CRGB(255, 255, 204),
+  CRGB(255, 255, 102),
+  CRGB(255, 255, 51)
 };
 
 CRGB interpolateColor(CRGB color1, CRGB color2, float ratio)
@@ -53,23 +31,23 @@ CRGB interpolateColor(CRGB color1, CRGB color2, float ratio)
     return CRGB((uint8_t)round(r), (uint8_t)round(g), (uint8_t)round(b));
 }
 
-CRGB* fadeColors(CRGB color, CRGB targetColor, uint8_t steps)
+CRGB* fadeColors(CRGB color, CRGB target_color, uint8_t steps)
 {
     CRGB *fadedColors = (CRGB *) malloc((steps + 1) * sizeof(CRGB));
 
     for (int j = 0; j <= steps; j++) {
-        fadedColors[j] = fadeColor(color, targetColor, steps, j);
+        fadedColors[j] = fadeColor(color, target_color, steps, j);
     }
 
     return fadedColors;
 }
 
-CRGB fadeColor(CRGB color, CRGB targetColor, uint8_t rangeSize, uint8_t step)
+CRGB fadeColor(CRGB color, CRGB target_color, uint8_t range_size, uint8_t step)
 {
-    float stepSize = 1 / (float)(rangeSize + 1);
+    float stepSize = 1 / (float)(range_size + 1);
     float ratio = step * stepSize;
 
-    return interpolateColor(color, targetColor, ratio);
+    return interpolateColor(color, target_color, ratio);
 }
 
 float hue2rgb(float p, float q, float t) 
