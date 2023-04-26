@@ -7,7 +7,7 @@ CRGB *leds_pointer;
 config *config_pointer;
 
 CRGB *animation_colors;
-uint16_t animation_loop = 0;
+int16_t animation_loop = 0;
 uint8_t animation_state = 0;
 uint8_t animation_setup = 0;
 
@@ -18,6 +18,7 @@ void handle_animation_1();
 void handle_animation_2();
 void handle_animation_3();
 void handle_animation_4();
+void handle_animation_5();
 void setup_animation_1();
 void setup_animation_4();
 
@@ -34,6 +35,9 @@ void next_animation()
       config_pointer->animation_sequence = 0;
     }
   }
+
+  animation_loop = 0;
+  animation_state = 0;
 
   save_config(config_pointer);
 }
@@ -96,6 +100,12 @@ void handle_animation()
     case 3:
       handle_animation_3();
       break;
+    case 4:
+      handle_animation_4();
+      break;
+    case 5:
+      handle_animation_5();
+      break;
     default:
       handle_animation_0();
       break;
@@ -136,7 +146,7 @@ void handle_animation_1()
     setup_animation_1();
   }
 
-  // Move configured static color across all leds.
+  // Move chosen static color across all leds.
   if (millis() - last_update > 200) {
     
     for (int i = 0; i < NUM_LEDS; i++) {
@@ -186,13 +196,30 @@ void handle_animation_3()
   if (millis() - last_update > 100) {
 
     for (int i = 0; i < NUM_LEDS; i++) {
-      float hue = (float)(i + animation_loop) / 360;
-      CRGB color = hslToRgb(hue, 1, 0.5);
-      leds_pointer[i] = color;
+      uint16_t color = (i * 5) + animation_loop;
+      if (color >= 360) {
+        color -= 359;
+      }
+
+      float hue = (float)(color) / 360;
+      leds_pointer[i] = hslToRgb(hue, 1, 0.5);
     }
 
-    if (animation_loop++ >= 360 - NUM_LEDS) {
-      animation_loop = 0;
+    if (animation_state == 0) {
+      animation_loop++;
+
+      if (NUM_LEDS * 5 + animation_loop >= 360) {
+        animation_state = 1;
+        animation_loop--;
+      }
+    }
+    else if (animation_state == 1) {
+      animation_loop--;
+
+      if (animation_loop < 0) {
+        animation_state = 0;
+        animation_loop++;
+      }
     }
 
     FastLED.show();
@@ -203,6 +230,68 @@ void handle_animation_3()
 
 void handle_animation_4()
 {
+  // Gradually change color from one begin LED to end LED.
+  if (millis() - last_update > 10) {
+
+    for (int i = 0; i < NUM_LEDS; i++) {
+      uint16_t color = (i * 5) + animation_loop;
+      if (color >= 360) {
+        color -= 360;
+      }
+
+      float hue = (float)(color) / 360;
+      leds_pointer[i] = hslToRgb(hue, 1, 0.5);
+    }
+
+    if (animation_loop++ >= 360) {
+        animation_loop = 0;
+    }
+
+    FastLED.show();
+
+    last_update = millis();
+  }
+}
+
+void handle_animation_5()
+{
+  // Move one LED with chosen static color across the field and back.
+  if (millis() - last_update > 50) {
+    
+    for (int i = 0; i < NUM_LEDS; i++) {
+      if (animation_loop == i) {
+        leds_pointer[i] = STATIC_COLORS[config_pointer->static_color];
+      }
+      else {
+        leds_pointer[i] = CRGB::Black;
+      }
+    }
+
+    if (animation_state == 0) {
+      animation_loop++;
+
+      if (animation_loop >= NUM_LEDS) {
+        animation_state = 1;
+        animation_loop--;
+      }
+    }
+    else if (animation_state == 1) {
+      animation_loop--;
+
+      if (animation_loop < 0) {
+        animation_state = 0;
+        animation_loop++;
+      }
+    }
+
+    FastLED.show();
+
+    last_update = millis();
+  }
+}
+
+//void handle_animation_4()
+//{
   // if (!animation_colors_3_setup_done) {
   //   setup_animation_colors_3();
   // }
@@ -211,7 +300,7 @@ void handle_animation_4()
   // if (millis() - last_update > 50) {
 
   // }
-}
+//}
 
 void setup_animation_1()
 {

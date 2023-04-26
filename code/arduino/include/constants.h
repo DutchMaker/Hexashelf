@@ -2,7 +2,7 @@
 #define constants_h
 
 #define NUM_LEDS            14
-#define NUM_ANIMATIONS      3
+#define NUM_ANIMATIONS      6
 #define NUM_STATIC_COLORS   18
 
 #define PIN_LED             2
