@@ -1,7 +1,7 @@
 #ifndef constants_h
 #define constants_h
 
-#define NUM_LEDS            14
+#define NUM_LEDS            23
 #define NUM_ANIMATIONS      6
 #define NUM_STATIC_COLORS   18
 
